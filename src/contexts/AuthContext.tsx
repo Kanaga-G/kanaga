@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 
 interface User {
   id: string
@@ -36,22 +36,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Simulate checking for existing auth session
     const checkAuth = async () => {
-      const savedUser = localStorage.getItem('user')
-      if (savedUser) {
-        setUser(JSON.parse(savedUser))
+      try {
+        const savedUser = localStorage.getItem('user')
+        if (savedUser) {
+          setUser(JSON.parse(savedUser))
+        }
+      } catch (error) {
+        console.error('Error parsing saved user:', error)
+        localStorage.removeItem('user')
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     
     checkAuth()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     if (!email || !password) {
       throw new Error('Email et mot de passe sont requis')
     }
-    void password;
-
+    void password; // Suppress unused parameter warning
 
     setIsLoading(true)
     try {
@@ -73,9 +78,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = useCallback(async (email: string, password: string, name: string) => {
     if (!email || !password || !name) {
       throw new Error('Tous les champs sont requis')
     }
@@ -99,17 +104,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null)
     localStorage.removeItem('user')
-  }
+  }, [])
 
-  const openAuthModal = () => setShowAuthModal(true)
-  const closeAuthModal = () => setShowAuthModal(false)
+  const openAuthModal = useCallback(() => setShowAuthModal(true), [])
+  const closeAuthModal = useCallback(() => setShowAuthModal(false), [])
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo<AuthContextType>(() => ({
     user,
     isLoading,
     showAuthModal,
@@ -118,10 +124,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     openAuthModal,
     closeAuthModal
-  }
+  }), [user, isLoading, showAuthModal, login, register, logout, openAuthModal, closeAuthModal])
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )
