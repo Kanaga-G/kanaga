@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { HeroSection } from '../components/sections/HeroSection'
 import { ServicesSection } from '../components/sections/ServicesSection'
 import { FeaturesSection } from '../components/sections/FeaturesSection'
 import { TestimonialsSection } from '../components/sections/TestimonialsSection'
-import { ChatBot } from '../components/ChatBot'
+
+// Lazy load ChatBot since it's not critical for initial render
+const ChatBot = lazy(() => import('../components/ChatBot').then(module => ({ default: module.ChatBot })))
 
 export const Home: React.FC = () => {
   return (
@@ -12,7 +14,9 @@ export const Home: React.FC = () => {
       <ServicesSection />
       <FeaturesSection />
       <TestimonialsSection />
-      <ChatBot />
+      <Suspense fallback={null}>
+        <ChatBot />
+      </Suspense>
     </div>
   )
 }

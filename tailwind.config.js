@@ -3,7 +3,14 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    // Include PHP files if they contain Tailwind classes
+    "./*.php",
+    "./includes/**/*.php"
   ],
+  // Remove unused CSS in production
+  corePlugins: {
+    preflight: true,
+  },
   theme: {
     extend: {
       colors: {
@@ -57,12 +64,13 @@ export default {
         }
       },
       fontFamily: {
-        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+        'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'bounce-gentle': 'bounceGentle 2s infinite',
+        'spin': 'spin 1s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -81,5 +89,12 @@ export default {
       }
     },
   },
+  // Safelist for dynamically generated classes
+  safelist: [
+    'animate-spin',
+    'animate-fade-in',
+    'animate-slide-up',
+    'animate-bounce-gentle',
+  ],
   plugins: [],
 }
